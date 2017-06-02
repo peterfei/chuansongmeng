@@ -19,7 +19,7 @@ NEWSPIDER_MODULE = 'wechatTop.spiders'
 #USER_AGENT = 'wechatTop (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-DOWNLOAD_DELAY = 1  # 间隔时间
+DOWNLOAD_DELAY = 10  # 间隔时间
 # LOG_LEVEL = 'INFO'  # 日志级别
 CONCURRENT_REQUESTS = 20  # 默认为16
 # CONCURRENT_ITEMS = 1

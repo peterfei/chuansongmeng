@@ -10,11 +10,13 @@ from scrapy.spiders import CrawlSpider,Rule
 from scrapy.selector import Selector
 import requests
 import pdb
+from scrapy.http import FormRequest
+
 from wechatTop.items import WechattopItem
 
 class ChuansongSpider(scrapy.Spider):
     name = "chuansong"
-    allowed_domains = ["chuansong.me"]
+    allowed_domains = ["chuansong.me",'jkgl.ezu365.cn']
     host = 'http://chuansong.me/'
     start_urls = list(set(TOP_TYPES))
     # start_urls = ['http://chuansong.me/food']
@@ -36,11 +38,15 @@ class ChuansongSpider(scrapy.Spider):
         selector = Selector(response)
         logging.debug('request url:------>' + response.url)
         divs = selector.xpath('//a[@class="question_link"]')
+        i=0
         for div in divs:
-            urlkey = re.findall(r'href=[\'"]?([^\'" >]+)',div.extract())
-            # logging.debug(viewkey)
-            yield Request(url='http://chuansong.me%s' % urlkey[0],
-                          callback=self.parse_ph_info)
+            i+=1
+            # logging.debug('循环数 %i'+i)
+            if i<7:
+              urlkey = re.findall(r'href=[\'"]?([^\'" >]+)',div.extract())
+              # logging.debug(viewkey)
+              yield Request(url='http://chuansong.me%s' % urlkey[0],
+                              callback=self.parse_ph_info)
     def parse_ph_info(self, response):
         wechatTop =  WechattopItem()
         selector = Selector(response)
@@ -50,4 +56,11 @@ class ChuansongSpider(scrapy.Spider):
         wechatTop['content'] = re.sub(ur'(\s)\s+', ur'\1', content, flags=re.MULTILINE + re.UNICODE)
         # logging.debug("Content is ============%s"+content[0])
         # pdb.set_trace() 
+        # photo_url = response.xpath('//*[@id="js_content"]/p/img/@src').extract()[0]
+        # logging.debug('++++photo_urlIS++++%s'+photo_url)
+        frmdata = {"title": wechatTop['title'], "content": content, 'wx_id':'o6BTi0lgZmk9NdwB_NvWDHlqJctQ','bbs_topic_id':'0'}
+        url = "http://jkgl.ezu365.cn/api/v2/articles/add_article"
+        yield FormRequest(url, callback=self.parse_api, formdata=frmdata)
         yield wechatTop
+    def parse_api(self, response):
+        logging.debug('++++======+++++')
